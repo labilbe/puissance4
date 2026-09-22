@@ -140,7 +140,11 @@ input {
 .board__numbers {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    padding: 0 10px;
+    padding: 0 10px 4px;
+
+    /* Un jeton lâché part d'une rangée au-dessus du panneau : on lui laisse la place,
+       au-dessus des numéros, qui restent au contact de la grille qu'ils désignent. */
+    margin-top: calc(100% / 9);
     color: var(--ink-faint);
     font-size: 13px;
     font-variation-settings: "wdth" 84, "wght" 600;
@@ -164,9 +168,6 @@ input {
         0 -3px 0 rgb(0 0 0 / 22%) inset,
         0 18px 44px rgb(0 0 0 / 38%),
         0 2px 6px rgb(0 0 0 / 30%);
-
-    /* Un jeton lâché part d'une rangée au-dessus du panneau : on lui laisse la place. */
-    margin-top: calc(100% / 7);
 }
 
 /* Le fond d'un trou vide. */

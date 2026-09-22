@@ -62,11 +62,11 @@
             <div class="tally">
                 <span class="tally__side">
                     <span class="chip chip--red"></span>
-                    Rouges, @_session.RedCount jetons
+                    Rouges, @Discs(_session.RedCount)
                 </span>
                 <span class="tally__side">
                     <span class="chip chip--yellow"></span>
-                    Jaunes, @_session.YellowCount jetons
+                    Jaunes, @Discs(_session.YellowCount)
                 </span>
             </div>
         </section>
@@ -286,10 +286,13 @@
 
     private static string SeatName(Seat seat) => seat == Seat.Human ? "Vous" : "Ordinateur";
 
+    /// <summary>« 1 jeton », « 3 jetons » — en français, zéro reste au singulier.</summary>
+    private static string Discs(int count) => count > 1 ? $"{count} jetons" : $"{count} jeton";
+
     private string ColumnLabel(int column)
     {
         int landing = _session.LandingRow(column);
-        string state = landing < 0 ? "pleine" : $"{Grid.Rows - 1 - landing} jetons posés";
+        string state = landing < 0 ? "pleine" : $"{Discs(Grid.Rows - 1 - landing)} posé{(Grid.Rows - 1 - landing > 1 ? "s" : null)}";
 
         return $"Colonne {Grid.NumberOf(column)}, {state}";
     }
