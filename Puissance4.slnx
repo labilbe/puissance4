@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Puissance4.Cli/Puissance4.Cli.csproj" />
+    <Project Path="src/Puissance4.Core/Puissance4.Core.csproj" />
+    <Project Path="src/Puissance4.Web/Puissance4.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Puissance4.Core.Tests/Puissance4.Core.Tests.csproj" />
+  </Folder>
+</Solution>

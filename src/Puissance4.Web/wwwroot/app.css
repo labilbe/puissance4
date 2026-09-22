@@ -1,0 +1,602 @@
+/* ---------------------------------------------------------------------------
+   Puissance 4 — le jouet posé sur une table : plastique bleu, jetons rouges et
+   jaunes, bleu de nuit au fond des trous vides. La typographie est une seule
+   superfamille, Archivo, déclinée sur son axe de chasse : large pour le titre,
+   normale pour l'interface, étroite et tabulaire pour les chiffres.
+   --------------------------------------------------------------------------- */
+
+:root {
+    color-scheme: dark;
+
+    --room: #1d2230;
+    --room-lift: #262c3c;
+    --room-edge: #343c50;
+    --panel: #1b4fa8;
+    --panel-dark: #10336f;
+    --panel-light: #2c6bd0;
+    --red: #d63f36;
+    --yellow: #edb229;
+    --ivory: #eef1f6;
+    --accent: #79b8ff;
+    --hollow: #0b1f3f;
+
+    --ink: var(--ivory);
+    --ink-soft: rgb(238 241 246 / 64%);
+    --ink-faint: rgb(238 241 246 / 34%);
+
+    --fall: 340ms;
+    --gravity: cubic-bezier(0.5, 0, 0.75, 1);
+    --ease: cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        color-scheme: light;
+
+        --room: #e6e8ef;
+        --room-lift: #f4f5f9;
+        --room-edge: #d2d6e2;
+        --ink: #1d2230;
+        --ink-soft: rgb(29 34 48 / 70%);
+        --ink-faint: rgb(29 34 48 / 42%);
+        --accent: #1b5fbe;
+        --hollow: #0a1a33;
+    }
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    min-height: 100dvh;
+    background:
+        radial-gradient(120% 90% at 50% -10%, rgb(255 255 255 / 7%), transparent 60%),
+        var(--room);
+    color: var(--ink);
+    font-family: Archivo, "Segoe UI", system-ui, sans-serif;
+    font-variation-settings: "wdth" 100;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+button,
+select,
+input {
+    font: inherit;
+    font-variation-settings: inherit;
+    color: inherit;
+}
+
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* --- charpente ----------------------------------------------------------- */
+
+.room {
+    max-width: 1080px;
+    margin-inline: auto;
+    padding: clamp(20px, 4vw, 44px) clamp(16px, 4vw, 32px) 56px;
+}
+
+.masthead {
+    margin-bottom: clamp(20px, 3vw, 32px);
+}
+
+.masthead__title {
+    margin: 0;
+    font-size: clamp(36px, 6vw, 54px);
+    font-variation-settings: "wdth" 122, "wght" 800;
+    letter-spacing: -0.03em;
+    line-height: 0.92;
+    color: var(--ink);
+}
+
+.masthead__note {
+    margin: 6px 0 0;
+    max-width: 46ch;
+    color: var(--ink-soft);
+}
+
+.table {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 286px;
+    gap: clamp(20px, 3vw, 36px);
+    align-items: start;
+}
+
+@media (max-width: 920px) {
+    .table {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.stage {
+    display: grid;
+    gap: 14px;
+    justify-items: center;
+}
+
+/* --- la grille ------------------------------------------------------------
+   Trois calques empilés : le panneau bleu avec ses quarante-deux trous vides,
+   les jetons qui glissent derrière lui, et par-dessus les sept colonnes
+   cliquables, dont les biseaux redonnent aux jetons leur profondeur.
+   -------------------------------------------------------------------------- */
+
+.board {
+    width: 100%;
+    max-width: min(620px, 72vh);
+}
+
+.board__numbers {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    padding: 0 10px;
+    color: var(--ink-faint);
+    font-size: 13px;
+    font-variation-settings: "wdth" 84, "wght" 600;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+}
+
+.board--bare .board__numbers {
+    visibility: hidden;
+}
+
+.board__panel {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    padding: 10px;
+    border-radius: 14px 14px 4px 4px;
+    background: linear-gradient(170deg, var(--panel-light), var(--panel) 46%, var(--panel-dark));
+    box-shadow:
+        0 1px 0 rgb(255 255 255 / 22%) inset,
+        0 -3px 0 rgb(0 0 0 / 22%) inset,
+        0 18px 44px rgb(0 0 0 / 38%),
+        0 2px 6px rgb(0 0 0 / 30%);
+
+    /* Un jeton lâché part d'une rangée au-dessus du panneau : on lui laisse la place. */
+    margin-top: calc(100% / 7);
+}
+
+/* Le fond d'un trou vide. */
+.back {
+    aspect-ratio: 1;
+    background: radial-gradient(circle at 50% 50%, var(--hollow) 0 39%, transparent 39.5%);
+}
+
+.board__discs,
+.board__columns {
+    position: absolute;
+    inset: 10px;
+}
+
+.board__columns {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.column {
+    position: relative;
+    display: grid;
+    grid-template-rows: repeat(6, 1fr);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.column:disabled {
+    cursor: default;
+}
+
+/* Le biseau du trou, dessiné par-dessus le jeton : c'est lui qui l'enfonce. */
+.hole {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    box-shadow:
+        0 2px 5px rgb(0 0 0 / 40%) inset,
+        0 -1px 2px rgb(255 255 255 / 20%) inset;
+    scale: 0.78;
+}
+
+/* Survol d'une colonne jouable : un jeton fantôme attend sur sa case. */
+.column:not(:disabled):hover::before,
+.column:not(:disabled):focus-visible::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: calc(var(--landing) * 100% / 6);
+    width: 100%;
+    height: calc(100% / 6);
+    background: radial-gradient(circle at 50% 50%, rgb(121 184 255 / 30%) 0 39%, transparent 39.5%);
+    pointer-events: none;
+}
+
+/* Dernière colonne jouée : un repère discret sur la tranche du panneau. */
+.column.is-last::after {
+    content: "";
+    position: absolute;
+    inset: -7px 22% auto;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--accent);
+}
+
+/* --- jetons -------------------------------------------------------------- */
+
+.disc {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(100% / 7);
+    height: calc(100% / 6);
+    display: grid;
+    place-items: center;
+    translate: calc(var(--c) * 100%) calc(var(--r) * 100%);
+    transition: translate var(--fall) var(--gravity);
+}
+
+.disc::before {
+    content: "";
+    width: 78%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--face);
+    box-shadow:
+        0 0 0 1px rgb(0 0 0 / 28%),
+        0 2px 4px rgb(0 0 0 / 30%),
+        0 0 0 3px var(--rim) inset,
+        0 -3px 6px rgb(0 0 0 / 26%) inset,
+        0 3px 7px rgb(255 255 255 / 26%) inset;
+}
+
+.disc--red {
+    --face: radial-gradient(70% 70% at 34% 28%, #f2705f, var(--red) 54%, #8f221c);
+    --rim: rgb(0 0 0 / 14%);
+}
+
+.disc--yellow {
+    --face: radial-gradient(70% 70% at 34% 28%, #ffdd7a, var(--yellow) 54%, #a5730c);
+    --rim: rgb(0 0 0 / 14%);
+}
+
+/* L'alignement gagnant : les quatre jetons s'éclairent. */
+.disc--winning::after {
+    content: "";
+    position: absolute;
+    width: 78%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px var(--ivory), 0 0 18px rgb(238 241 246 / 55%);
+    animation: glow 1.4s var(--ease) infinite;
+}
+
+@keyframes glow {
+    0%, 100% { opacity: 0.45; }
+    50% { opacity: 1; }
+}
+
+/* --- décompte ------------------------------------------------------------ */
+
+.tally {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 22px;
+    width: 100%;
+    max-width: min(620px, 72vh);
+    color: var(--ink-soft);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+.tally__side {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chip {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 35%);
+}
+
+.chip--red {
+    background: linear-gradient(150deg, #f2705f, #8f221c);
+}
+
+.chip--yellow {
+    background: linear-gradient(150deg, #ffdd7a, #a5730c);
+}
+
+/* --- colonne de droite --------------------------------------------------- */
+
+.rail {
+    display: grid;
+    gap: 14px;
+}
+
+.turn,
+.panel,
+.record {
+    padding: 14px 16px;
+    border: 1px solid var(--room-edge);
+    border-radius: 3px;
+    background: var(--room-lift);
+}
+
+.turn {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 4px 10px;
+    border-left: 3px solid var(--accent);
+}
+
+.turn--over {
+    border-left-color: var(--ink-faint);
+}
+
+.turn__mark {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 40%);
+}
+
+.turn__mark--red {
+    background: linear-gradient(150deg, #f2705f, #8f221c);
+}
+
+.turn__mark--yellow {
+    background: linear-gradient(150deg, #ffdd7a, #a5730c);
+}
+
+.turn__text {
+    font-variation-settings: "wdth" 104, "wght" 620;
+}
+
+.turn__hint {
+    grid-column: 2;
+    color: var(--accent);
+    font-size: 13px;
+    font-variation-settings: "wdth" 92, "wght" 600;
+}
+
+.panel {
+    display: grid;
+    gap: 12px;
+}
+
+.seat {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 6px;
+}
+
+.seat__name {
+    color: var(--ink-soft);
+    font-size: 13px;
+}
+
+.pill {
+    padding: 5px 11px;
+    border: 1px solid var(--room-edge);
+    border-radius: 2px;
+    background: transparent;
+    color: var(--ink-soft);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.pill--on {
+    border-color: var(--accent);
+    background: rgb(121 184 255 / 16%);
+    color: var(--ink);
+    font-variation-settings: "wght" 620;
+}
+
+.field {
+    display: grid;
+    gap: 5px;
+}
+
+.field__name,
+.check {
+    color: var(--ink-soft);
+    font-size: 13px;
+}
+
+.field select {
+    padding: 6px 8px;
+    border: 1px solid var(--room-edge);
+    border-radius: 2px;
+    background: var(--room);
+    cursor: pointer;
+}
+
+.check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.check input {
+    accent-color: var(--accent);
+}
+
+.actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.button {
+    padding: 9px 10px;
+    border: 1px solid var(--room-edge);
+    border-radius: 2px;
+    background: transparent;
+    cursor: pointer;
+    font-size: 13px;
+    font-variation-settings: "wght" 560;
+}
+
+.button:hover:not(:disabled) {
+    border-color: var(--accent);
+}
+
+.button--strong {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #0d1b2e;
+    font-variation-settings: "wght" 660;
+}
+
+.button:disabled {
+    opacity: 0.42;
+    cursor: default;
+}
+
+/* --- relevé -------------------------------------------------------------- */
+
+.record__name {
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-variation-settings: "wdth" 92, "wght" 640;
+    color: var(--ink-soft);
+}
+
+.record__empty {
+    margin: 0;
+    color: var(--ink-faint);
+    font-size: 13px;
+}
+
+.record__list {
+    margin: 0;
+    padding: 0;
+    max-height: 288px;
+    overflow-y: auto;
+    list-style: none;
+    font-variant-numeric: tabular-nums;
+    font-variation-settings: "wdth" 88;
+    font-size: 13px;
+}
+
+.record__turn {
+    display: grid;
+    grid-template-columns: 26px 1fr 1fr;
+    gap: 6px;
+    padding: 3px 0;
+    border-bottom: 1px solid var(--room-edge);
+}
+
+.record__number {
+    color: var(--ink-faint);
+}
+
+/* --- échange de parties -------------------------------------------------- */
+
+.actions--three {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.pcn {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--room-edge);
+    border-radius: 2px;
+    background: var(--room);
+    color: var(--ink);
+    font-size: 12px;
+    font-variation-settings: "wdth" 88;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.45;
+    resize: vertical;
+}
+
+.pcn::placeholder {
+    color: var(--ink-faint);
+}
+
+.notice {
+    margin: 2px 0 0;
+    color: var(--ink-soft);
+    font-size: 13px;
+}
+
+.notice--bad {
+    color: var(--accent);
+}
+
+/* --- amorçage ------------------------------------------------------------ */
+
+.boot {
+    display: grid;
+    place-items: center;
+    gap: 16px;
+    min-height: 100dvh;
+}
+
+.boot__disc {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: radial-gradient(70% 70% at 34% 28%, #f2705f, #d63f36 54%, #8f221c);
+    box-shadow: 0 0 0 3px rgb(0 0 0 / 14%) inset, 0 4px 12px rgb(0 0 0 / 35%);
+    animation: drop 1.4s var(--gravity) infinite;
+}
+
+.boot__text {
+    margin: 0;
+    color: var(--ink-soft);
+}
+
+@keyframes drop {
+    0% { translate: 0 -14px; opacity: 0.2; }
+    60% { translate: 0 10px; opacity: 1; }
+    100% { translate: 0 -14px; opacity: 0.2; }
+}
+
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 100;
+    padding: 12px 20px;
+    background: var(--accent);
+    color: #0d1b2e;
+    box-shadow: 0 -2px 16px rgb(0 0 0 / 35%);
+}
+
+#blazor-error-ui .dismiss {
+    float: right;
+    cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .disc {
+        transition: none;
+    }
+
+    .disc--winning::after,
+    .boot__disc {
+        animation: none;
+    }
+}

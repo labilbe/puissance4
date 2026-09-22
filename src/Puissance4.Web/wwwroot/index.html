@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Puissance 4</title>
+    <meta name="description" content="Puissance 4 : grille de 7 colonnes sur 6, quatre jetons alignés l'emportent. Contre l'ordinateur ou à deux, directement dans le navigateur." />
+    <base href="/" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="app#[.{fingerprint}].css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+
+    <!-- Remplies à la publication par le SDK : préchargement du runtime, puis
+         correspondance entre les noms de modules et leurs fichiers empreints. -->
+    <link rel="preload" id="webassembly" />
+    <script type="importmap"></script>
+</head>
+
+<body>
+    <div id="app">
+        <div class="boot">
+            <div class="boot__disc"></div>
+            <p class="boot__text">Mise en place de la grille</p>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui">
+        Une erreur est survenue. Rechargez la page pour reprendre.
+        <a href="." class="reload">Recharger</a>
+        <span class="dismiss">🗙</span>
+    </div>
+
+    <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
+</body>
+
+</html>
