@@ -366,6 +366,10 @@ input {
     background: linear-gradient(150deg, #ffdd7a, #a5730c);
 }
 
+.turn__mark--none {
+    background: var(--ink-faint);
+}
+
 .turn__text {
     font-variation-settings: "wdth" 104, "wght" 620;
 }

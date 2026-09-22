@@ -73,7 +73,7 @@
 
         <aside class="rail">
             <div class="turn @(_session.Result.IsOver() ? "turn--over" : null)" aria-live="polite">
-                <span class="turn__mark @(_session.SideToMove == Player.Red ? "turn__mark--red" : "turn__mark--yellow")"></span>
+                <span class="turn__mark @MarkClass()"></span>
                 <span class="turn__text">@StatusLine()</span>
                 @if (Hint() is string hint)
                 {
@@ -296,6 +296,18 @@
 
         return $"Colonne {Grid.NumberOf(column)}, {state}";
     }
+
+    /// <summary>
+    /// La pastille montre le camp au trait ; la partie finie, elle montre le vainqueur,
+    /// et ne montre plus personne si la grille s'est remplie sans alignement.
+    /// </summary>
+    private string MarkClass() => _session.Result switch
+    {
+        GameResult.RedWins => "turn__mark--red",
+        GameResult.YellowWins => "turn__mark--yellow",
+        GameResult.Draw => "turn__mark--none",
+        _ => _session.SideToMove == Player.Red ? "turn__mark--red" : "turn__mark--yellow",
+    };
 
     private string StatusLine()
     {
